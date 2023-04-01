@@ -1,0 +1,4 @@
+migrations: true
+
+env:
+  APP_DEBUG: true
