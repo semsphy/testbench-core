@@ -1,5 +1,4 @@
 <?php
-
 namespace Orchestra\Testbench\Concerns;
 
 use Carbon\Carbon;
@@ -83,7 +82,7 @@ trait Testing
      */
     final protected function setUpTheTestEnvironment(): void
     {
-        if (! $this->app) {
+        if (!$this->app) {
             $this->refreshApplication();
 
             $this->setUpParallelTestingCallbacks();
@@ -165,11 +164,18 @@ trait Testing
         }
 
         Artisan::forgetBootstrappers();
-        Component::flushCache();
-        Component::forgetComponentsResolver();
-        Component::forgetFactory();
+
+        if (version_compare(app()->version(), '9.0.0', '>')) {
+            Component::flushCache();
+            Component::forgetComponentsResolver();
+            Component::forgetFactory();
+        }
+
         Queue::createPayloadUsing(null);
-        HandleExceptions::forgetApp();
+
+        if (version_compare(app()->version(), '9.0.0', '>')) {
+            HandleExceptions::forgetApp();
+        }
 
         if ($this->callbackException) {
             throw $this->callbackException;
@@ -232,11 +238,11 @@ trait Testing
                 return class_basename($use);
             })->each(function ($traitBaseName) {
                 /** @var string $traitBaseName */
-                if (method_exists($this, $method = 'setUp'.$traitBaseName)) {
+                if (method_exists($this, $method = 'setUp' . $traitBaseName)) {
                     $this->{$method}();
                 }
 
-                if (method_exists($this, $method = 'tearDown'.$traitBaseName)) {
+                if (method_exists($this, $method = 'tearDown' . $traitBaseName)) {
                     $this->beforeApplicationDestroyed(function () use ($method) {
                         $this->{$method}();
                     });
@@ -331,7 +337,7 @@ trait Testing
             try {
                 \call_user_func($callback);
             } catch (Throwable $e) {
-                if (! $this->callbackException) {
+                if (!$this->callbackException) {
                     $this->callbackException = $e;
                 }
             }
